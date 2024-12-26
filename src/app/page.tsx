@@ -8,8 +8,19 @@ import {
   Trash2,
   ChevronDown,
   Repeat,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
-import { format, isToday, isBefore, startOfDay, parseISO, addDays, addWeeks, isSameDay } from "date-fns";
+import {
+  format,
+  isToday,
+  isBefore,
+  startOfDay,
+  parseISO,
+  addDays,
+  addWeeks,
+  isSameDay,
+} from "date-fns";
 
 interface TimeSlot {
   startTime: string;
@@ -27,20 +38,26 @@ const generateTimeOptions = (selectedDate: Date) => {
   const options: string[] = [];
   const now = new Date();
   const isCurrentDate = isToday(selectedDate);
-  
+
   const startHour = isCurrentDate ? now.getHours() : 0;
   const startMinute = isCurrentDate ? Math.ceil(now.getMinutes() / 15) * 15 : 0;
 
   for (let hour = startHour; hour < 24; hour++) {
-    for (let minute = hour === startHour ? startMinute : 0; minute < 60; minute += 15) {
+    for (
+      let minute = hour === startHour ? startMinute : 0;
+      minute < 60;
+      minute += 15
+    ) {
       if (isCurrentDate) {
         const optionTime = new Date(selectedDate);
         optionTime.setHours(hour, minute, 0, 0);
         if (isBefore(optionTime, now)) continue;
       }
-      
+
       options.push(
-        `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`
+        `${hour.toString().padStart(2, "0")}:${minute
+          .toString()
+          .padStart(2, "0")}`
       );
     }
   }
@@ -100,16 +117,19 @@ const DateSpecificScheduler = () => {
   const createTimeSlot = (date: Date, startTime: string) => {
     const [hours, minutes] = startTime.split(":");
     const endHours = (parseInt(hours) + 1) % 24;
-    
+
     if (isToday(date)) {
       const now = new Date();
       const slotTime = new Date(date);
       slotTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-      
+
       if (isBefore(slotTime, now)) {
         const nextMinute = Math.ceil(now.getMinutes() / 15) * 15;
-        const nextHour = nextMinute === 60 ? now.getHours() + 1 : now.getHours();
-        startTime = `${nextHour.toString().padStart(2, "0")}:${(nextMinute % 60).toString().padStart(2, "0")}`;
+        const nextHour =
+          nextMinute === 60 ? now.getHours() + 1 : now.getHours();
+        startTime = `${nextHour.toString().padStart(2, "0")}:${(nextMinute % 60)
+          .toString()
+          .padStart(2, "0")}`;
       }
     }
 
@@ -123,31 +143,31 @@ const DateSpecificScheduler = () => {
   const toggleRecurring = (dateIndex: number) => {
     const newSchedules = [...selectedDates];
     const schedule = newSchedules[dateIndex];
-    
+
     if (!schedule.isRecurring) {
       // Generate recurring dates
       const recurringDates = generateRecurringDates(schedule.date);
-      
+
       // Create new schedules for recurring dates
-      const newRecurringSchedules = recurringDates.map(date => ({
+      const newRecurringSchedules = recurringDates.map((date) => ({
         date,
-        timeSlots: schedule.timeSlots.map(slot => ({
+        timeSlots: schedule.timeSlots.map((slot) => ({
           ...slot,
-          id: Math.random().toString(36).substr(2, 9)
+          id: Math.random().toString(36).substr(2, 9),
         })),
-        isRecurring: true
+        isRecurring: true,
       }));
-      
+
       // Add recurring flag to original schedule
       schedule.isRecurring = true;
-      
+
       // Add all new schedules
       setSelectedDates([...newSchedules, ...newRecurringSchedules]);
     } else {
       // Remove all recurring instances
       const dayOfWeek = schedule.date.getDay();
-      const filteredSchedules = newSchedules.filter(s => 
-        !(s.isRecurring && s.date.getDay() === dayOfWeek)
+      const filteredSchedules = newSchedules.filter(
+        (s) => !(s.isRecurring && s.date.getDay() === dayOfWeek)
       );
       schedule.isRecurring = false;
       setSelectedDates(filteredSchedules);
@@ -164,15 +184,16 @@ const DateSpecificScheduler = () => {
         )
       );
     } else {
-      const defaultStartTime = isToday(date) ? 
-        generateTimeOptions(date)[0] : "09:00";
-        
+      const defaultStartTime = isToday(date)
+        ? generateTimeOptions(date)[0]
+        : "09:00";
+
       setSelectedDates([
         ...selectedDates,
         {
           date: date,
           timeSlots: [createTimeSlot(date, defaultStartTime)],
-          isRecurring: false
+          isRecurring: false,
         },
       ]);
     }
@@ -213,7 +234,7 @@ const DateSpecificScheduler = () => {
       const newDateTime = new Date(schedule.date);
       const [hours, minutes] = newTime.split(":").map(Number);
       newDateTime.setHours(hours, minutes, 0, 0);
-      
+
       if (isBefore(newDateTime, now)) return;
     }
 
@@ -268,7 +289,7 @@ const DateSpecificScheduler = () => {
             id: slot.id,
           };
         }),
-        isRecurring: schedule.isRecurring
+        isRecurring: schedule.isRecurring,
       };
     });
   };
@@ -280,189 +301,206 @@ const DateSpecificScheduler = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-4 space-y-6">
-      <h1 className="text-2xl font-bold mb-4">Schedule Availability</h1>
-      <div className="text-sm text-gray-500 mb-4">
-        All times shown in {timezone}
+    <div className="max-w-6xl mx-auto p-6 bg-gray-50 min-h-screen">
+      <div className="space-y-2 mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">
+          Schedule Availability
+        </h1>
+        <p className="text-sm text-gray-500">All times shown in {timezone}</p>
       </div>
 
-      <div className="flex items-center flex-col text-black">
-        <div className="border rounded-lg p-3 bg-white shadow-sm w-full mb-5">
-          <div className="mb-3 flex justify-between items-center">
-            <button
-              onClick={() =>
-                setCurrentDate(
-                  new Date(currentDate.setMonth(currentDate.getMonth() - 1))
-                )
-              }
-              className="p-1 hover:bg-gray-100 rounded"
-            >
-              ←
-            </button>
-            <h2 className="text-sm font-medium">
-              {format(currentDate, "MMMM yyyy")}
-            </h2>
-            <button
-              onClick={() =>
-                setCurrentDate(
-                  new Date(currentDate.setMonth(currentDate.getMonth() + 1))
-                )
-              }
-              className="p-1 hover:bg-gray-100 rounded"
-            >
-              →
-            </button>
+      <div className="flex gap-6">
+        {/* Fixed Calendar Section */}
+        <div className="w-[350px] h-fit sticky top-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div className="mb-4 flex justify-between items-center">
+              <button
+                onClick={() =>
+                  setCurrentDate(
+                    new Date(currentDate.setMonth(currentDate.getMonth() - 1))
+                  )
+                }
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5 text-gray-600" />
+              </button>
+              <h2 className="text-base font-semibold text-gray-900">
+                {format(currentDate, "MMMM yyyy")}
+              </h2>
+              <button
+                onClick={() =>
+                  setCurrentDate(
+                    new Date(currentDate.setMonth(currentDate.getMonth() + 1))
+                  )
+                }
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <ChevronRight className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-7 gap-1">
+              {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
+                <div
+                  key={day}
+                  className="text-center text-sm font-medium text-gray-500 p-2"
+                >
+                  {day}
+                </div>
+              ))}
+              {generateCalendarDays().map((date, index) => (
+                <div key={index} className="aspect-square p-0.5">
+                  {date && (
+                    <button
+                      onClick={() => toggleDateSelection(date)}
+                      disabled={isDateDisabled(date)}
+                      className={`w-full h-full flex items-center justify-center rounded-full text-sm transition-all
+                    ${
+                      isDateSelected(date)
+                        ? "bg-blue-600 text-white hover:bg-blue-700"
+                        : isDateDisabled(date)
+                        ? "text-gray-300 cursor-not-allowed"
+                        : "hover:bg-gray-100 text-gray-700"
+                    }
+                    ${isToday(date) ? "font-bold ring-2 ring-blue-200" : ""}`}
+                    >
+                      {date.getDate()}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="grid grid-cols-7 gap-1 text-xs">
-            {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
-              <div key={day} className="text-center font-medium p-1">
-                {day}
-              </div>
-            ))}
-            {generateCalendarDays().map((date, index) => (
-              <div key={index} className="aspect-square">
-                {date && (
-                  <button
-                    onClick={() => toggleDateSelection(date)}
-                    disabled={isDateDisabled(date)}
-                    className={`w-full h-full flex items-center justify-center rounded text-sm
-                      ${
-                        isDateSelected(date)
-                          ? "bg-blue-600 text-white hover:text-blue-600"
-                          : ""
-                      }
-                      ${
-                        isDateDisabled(date)
-                          ? "text-gray-300 cursor-not-allowed"
-                          : "hover:bg-gray-100"
-                      }
-                      ${isToday(date) ? "font-bold" : ""}`}
-                  >
-                    {date.getDate()}
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
+          {/* Save Button moved to sidebar */}
+          <button
+            onClick={handleSave}
+            disabled={selectedDates.length === 0}
+            className={`w-full mt-4 py-3 px-4 rounded-xl text-base font-medium transition-all ${
+              selectedDates.length === 0
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow"
+            }`}
+          >
+            Save Schedule
+          </button>
         </div>
 
-        <div className="flex-1 space-y-4 w-full">
-          {selectedDates
-            .sort((a, b) => a.date.getTime() - b.date.getTime())
-            .map((schedule, dateIndex) => (
-              <div
-                key={schedule.date.toISOString()}
-                className="border rounded-lg p-3 bg-white shadow-sm"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center">
-                    <CalendarIcon className="mr-2 text-gray-400" size={16} />
-                    <span className="font-medium text-sm">
-                      {format(schedule.date, "MMMM d, yyyy")}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => toggleRecurring(dateIndex)}
-                    className={`flex items-center space-x-1 text-sm px-2 py-1 rounded ${
-                      schedule.isRecurring
-                        ? "bg-blue-100 text-blue-600"
-                        : "text-gray-500 hover:bg-gray-100"
-                    }`}
+        {/* Scrollable Time Slots Section */}
+        <div className="flex-1 space-y-4 max-h-[calc(100vh-8rem)] overflow-y-auto rounded-xl">
+          {selectedDates.length > 0 ? (
+            <div className="space-y-4 p-1">
+              {selectedDates
+                .sort((a, b) => a.date.getTime() - b.date.getTime())
+                .map((schedule, dateIndex) => (
+                  <div
+                    key={schedule.date.toISOString()}
+                    className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 transition-all hover:shadow-md"
                   >
-                    <Repeat size={16} />
-                    <span>Monthly</span>
-                  </button>
-                </div>
-
-                <div className="space-y-2 ml-6">
-                  {schedule.timeSlots.map((slot, slotIndex) => (
-                    <div key={slot.id} className="flex items-center space-x-3">
-                      <Clock className="text-gray-400" size={16} />
-                      <div className="flex items-center space-x-2">
-                        <div className="relative">
-                          <select
-                            value={slot.startTime}
-                            onChange={(e) =>
-                              updateTime(
-                                dateIndex,
-                                slotIndex,
-                                "startTime",
-                                e.target.value
-                              )
-                            }
-                            className="border rounded px-2 py-1 pr-8 text-sm appearance-none bg-white"
-                          >
-                            {generateTimeOptions(schedule.date).map((time) => (
-                              <option key={time} value={time}>
-                                {time}
-                              </option>
-                            ))}
-                          </select>
-                          <ChevronDown className="absolute right-2 top-2 w-3 h-3 pointer-events-none text-gray-500" />
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="bg-blue-50 p-2 rounded-lg">
+                          <CalendarIcon className="text-blue-600" size={20} />
                         </div>
-                        <span className="text-sm">to</span>
-                        <div className="relative">
-                          <select
-                            value={slot.endTime}
-                            onChange={(e) =>
-                              updateTime(
-                                dateIndex,
-                                slotIndex,
-                                "endTime",
-                                e.target.value
-                              )
-                            }
-                            className="border rounded px-2 py-1 pr-8 text-sm appearance-none bg-white"
-                          >
-                            {generateTimeOptions(schedule.date).map((time) => (
-                              <option key={time} value={time}>
-                                {time}
-                              </option>
-                            ))}
-                          </select>
-                          <ChevronDown className="absolute right-2 top-2 w-3 h-3 pointer-events-none text-gray-500" />
-                        </div>
+                        <span className="font-semibold text-gray-900">
+                          {format(schedule.date, "EEEE, MMMM d, yyyy")}
+                        </span>
                       </div>
                       <button
-                        onClick={() => removeTimeSlot(dateIndex, slotIndex)}
-                        className="text-red-500 hover:text-red-600"
+                        onClick={() => toggleRecurring(dateIndex)}
+                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
+                          schedule.isRecurring
+                            ? "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                            : "text-gray-600 hover:bg-gray-100"
+                        }`}
                       >
-                        <Trash2 size={16} />
+                        <Repeat size={18} />
+                        <span className="text-sm font-medium">Monthly</span>
                       </button>
                     </div>
-                  ))}
 
-                  <button
-                    onClick={() => addTimeSlot(dateIndex)}
-                    className="flex items-center space-x-1 text-blue-600 hover:text-blue-700 text-sm mt-2"
-                  >
-                    <Plus size={16} />
-                    <span>Add time slot</span>
-                  </button>
-                </div>
+                    <div className="space-y-3 ml-12">
+                      {schedule.timeSlots.map((slot, slotIndex) => (
+                        <div
+                          key={slot.id}
+                          className="flex items-center space-x-4 group"
+                        >
+                          <Clock className="text-gray-400" size={18} />
+                          <div className="flex items-center space-x-3 text-black">
+                            <select
+                              value={slot.startTime}
+                              onChange={(e) =>
+                                updateTime(
+                                  dateIndex,
+                                  slotIndex,
+                                  "startTime",
+                                  e.target.value
+                                )
+                              }
+                              className="border border-gray-200 rounded-lg px-3 py-2 pr-10 text-sm bg-white hover:border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                            >
+                              {generateTimeOptions(schedule.date).map(
+                                (time) => (
+                                  <option key={time} value={time}>
+                                    {time}
+                                  </option>
+                                )
+                              )}
+                            </select>
+                            <span className="text-sm text-gray-500">to</span>
+                            <select
+                              value={slot.endTime}
+                              onChange={(e) =>
+                                updateTime(
+                                  dateIndex,
+                                  slotIndex,
+                                  "endTime",
+                                  e.target.value
+                                )
+                              }
+                              className="border border-gray-200 rounded-lg px-3 py-2 pr-10 text-sm bg-white hover:border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                            >
+                              {generateTimeOptions(schedule.date).map(
+                                (time) => (
+                                  <option key={time} value={time}>
+                                    {time}
+                                  </option>
+                                )
+                              )}
+                            </select>
+                          </div>
+                          <button
+                            onClick={() => removeTimeSlot(dateIndex, slotIndex)}
+                            className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      ))}
+
+                      <button
+                        onClick={() => addTimeSlot(dateIndex)}
+                        className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 text-sm mt-4 px-3 py-2 rounded-lg hover:bg-blue-50 transition-all"
+                      >
+                        <Plus size={18} />
+                        <span className="font-medium">Add time slot</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl p-8 text-center border border-gray-200">
+              <div className="text-gray-400 mb-3">
+                <CalendarIcon className="w-12 h-12 mx-auto" />
               </div>
-            ))}
-
-          {selectedDates.length === 0 && (
-            <div className="text-gray-500 text-center py-8">
-              Select dates from the calendar to schedule availability
+              <p className="text-gray-600 font-medium">
+                Select dates from the calendar to schedule availability
+              </p>
             </div>
           )}
         </div>
       </div>
-
-      <button
-        onClick={handleSave}
-        disabled={selectedDates.length === 0}
-        className={`w-full py-2 px-4 rounded-lg transition-colors ${
-          selectedDates.length === 0
-            ? "bg-gray-300 cursor-not-allowed"
-            : "bg-blue-600 text-white hover:bg-blue-700"
-        }`}
-      >
-        Save Schedule
-      </button>
     </div>
   );
 };
